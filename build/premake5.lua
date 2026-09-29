@@ -1,8 +1,8 @@
 -- edibles-raylib build script. Shared logic lives in the ely-arcade-sdk submodule (sdk/).
-dofile("../sdk/premake/ely_sdk.lua")
+dofile("../sdk/premake/arcade_sdk.lua")
 
-ely.prepare_dirs()
-ely.workspace("edibles-raylib")
-ely.raylib_project()
-ely.sdk_project("../sdk")
-ely.app_project("edibles-raylib", "../src", "../sdk")
+arcade.prepare_dirs()
+arcade.workspace("edibles-raylib")
+arcade.raylib_project()
+arcade.sdk_project("../sdk")
+arcade.app_project("edibles-raylib", "../src", "../sdk")

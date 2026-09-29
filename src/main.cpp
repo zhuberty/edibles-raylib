@@ -174,18 +174,18 @@ static void OnePlayerIsCollide()
 
 static void OnePlayerEvent()
 {
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Up) && g.dy1 == 0) { g.dy1 = -CELL; g.dx1 = 0; }
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Down) && g.dy1 == 0) { g.dy1 = CELL; g.dx1 = 0; }
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Left) && g.dx1 == 0) { g.dx1 = -CELL; g.dy1 = 0; }
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Right) && g.dx1 == 0) { g.dx1 = CELL; g.dy1 = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Up) && g.dy1 == 0) { g.dy1 = -CELL; g.dx1 = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Down) && g.dy1 == 0) { g.dy1 = CELL; g.dx1 = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Left) && g.dx1 == 0) { g.dx1 = -CELL; g.dy1 = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Right) && g.dx1 == 0) { g.dx1 = CELL; g.dy1 = 0; }
 
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Restart))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Restart))
     {
         StopMusicIfPlaying();
         InitOnePlayer();
         PlayMusicLoop();
     }
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Back))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Back))
     {
         StopMusicIfPlaying();
         g.scene = SceneId::Title;
@@ -314,23 +314,23 @@ static void TwoPlayerIsCollide()
 
 static void TwoPlayerEvent()
 {
-    if (ely::IsActionPressed(ely::Player::One, ely::Action::Up) && g.dyA == 0) { g.dyA = -CELL; g.dxA = 0; }
-    if (ely::IsActionPressed(ely::Player::One, ely::Action::Down) && g.dyA == 0) { g.dyA = CELL; g.dxA = 0; }
-    if (ely::IsActionPressed(ely::Player::One, ely::Action::Left) && g.dxA == 0) { g.dxA = -CELL; g.dyA = 0; }
-    if (ely::IsActionPressed(ely::Player::One, ely::Action::Right) && g.dxA == 0) { g.dxA = CELL; g.dyA = 0; }
+    if (arcade::IsActionPressed(arcade::Player::One, arcade::Action::Up) && g.dyA == 0) { g.dyA = -CELL; g.dxA = 0; }
+    if (arcade::IsActionPressed(arcade::Player::One, arcade::Action::Down) && g.dyA == 0) { g.dyA = CELL; g.dxA = 0; }
+    if (arcade::IsActionPressed(arcade::Player::One, arcade::Action::Left) && g.dxA == 0) { g.dxA = -CELL; g.dyA = 0; }
+    if (arcade::IsActionPressed(arcade::Player::One, arcade::Action::Right) && g.dxA == 0) { g.dxA = CELL; g.dyA = 0; }
 
-    if (ely::IsActionPressed(ely::Player::Two, ely::Action::Up) && g.dyB == 0) { g.dyB = -CELL; g.dxB = 0; }
-    if (ely::IsActionPressed(ely::Player::Two, ely::Action::Down) && g.dyB == 0) { g.dyB = CELL; g.dxB = 0; }
-    if (ely::IsActionPressed(ely::Player::Two, ely::Action::Left) && g.dxB == 0) { g.dxB = -CELL; g.dyB = 0; }
-    if (ely::IsActionPressed(ely::Player::Two, ely::Action::Right) && g.dxB == 0) { g.dxB = CELL; g.dyB = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Up) && g.dyB == 0) { g.dyB = -CELL; g.dxB = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Down) && g.dyB == 0) { g.dyB = CELL; g.dxB = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Left) && g.dxB == 0) { g.dxB = -CELL; g.dyB = 0; }
+    if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Right) && g.dxB == 0) { g.dxB = CELL; g.dyB = 0; }
 
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Restart))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Restart))
     {
         StopMusicIfPlaying();
         InitTwoPlayer();
         PlayMusicLoop();
     }
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Back))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Back))
     {
         StopMusicIfPlaying();
         g.scene = SceneId::Title;
@@ -398,12 +398,12 @@ static Rectangle CenteredRect(float cx, float cy, float w, float h)
 
 static void TitleEvent()
 {
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Down))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Down))
         g.titleSelection = (g.titleSelection == 3) ? 1 : g.titleSelection + 1;
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Up))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Up))
         g.titleSelection = (g.titleSelection == 1) ? 3 : g.titleSelection - 1;
 
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Confirm))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Confirm))
     {
         if (g.titleSelection == 1) { InitOnePlayer(); g.scene = SceneId::OnePlayer; PlayMusicLoop(); }
         else if (g.titleSelection == 2) { InitTwoPlayer(); g.scene = SceneId::TwoPlayer; PlayMusicLoop(); }
@@ -456,7 +456,7 @@ static void RebuildConfigColors()
 
 static void ConfigEvent()
 {
-    if (ely::IsActionPressed(ely::Player::One, ely::Action::Right))
+    if (arcade::IsActionPressed(arcade::Player::One, arcade::Action::Right))
     {
         g.colorIndexOne = (g.colorIndexOne == kColorCount - 1) ? 0 : g.colorIndexOne + 1;
         if (g.colorIndexOne == g.colorIndexTwo)
@@ -464,7 +464,7 @@ static void ConfigEvent()
         g.p1HiliRight = true; g.p1HiliLeft = false;
         RebuildConfigColors();
     }
-    if (ely::IsActionPressed(ely::Player::One, ely::Action::Left))
+    if (arcade::IsActionPressed(arcade::Player::One, arcade::Action::Left))
     {
         g.colorIndexOne = (g.colorIndexOne == 0) ? kColorCount - 1 : g.colorIndexOne - 1;
         if (g.colorIndexOne == g.colorIndexTwo)
@@ -472,7 +472,7 @@ static void ConfigEvent()
         g.p1HiliLeft = true; g.p1HiliRight = false;
         RebuildConfigColors();
     }
-    if (ely::IsActionPressed(ely::Player::Two, ely::Action::Right))
+    if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Right))
     {
         g.colorIndexTwo = (g.colorIndexTwo == kColorCount - 1) ? 0 : g.colorIndexTwo + 1;
         if (g.colorIndexTwo == g.colorIndexOne)
@@ -480,7 +480,7 @@ static void ConfigEvent()
         g.p2HiliRight = true; g.p2HiliLeft = false;
         RebuildConfigColors();
     }
-    if (ely::IsActionPressed(ely::Player::Two, ely::Action::Left))
+    if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Left))
     {
         g.colorIndexTwo = (g.colorIndexTwo == 0) ? kColorCount - 1 : g.colorIndexTwo - 1;
         if (g.colorIndexTwo == g.colorIndexOne)
@@ -489,7 +489,7 @@ static void ConfigEvent()
         RebuildConfigColors();
     }
 
-    if (ely::IsActionPressed(ely::Player::Any, ely::Action::Back))
+    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Back))
     {
         g.scene = SceneId::Title;
         g.p1HiliLeft = g.p1HiliRight = g.p2HiliLeft = g.p2HiliRight = false;
