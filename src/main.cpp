@@ -37,6 +37,37 @@ static const NamedColor kColors[] = {
 };
 static const int kColorCount = (int)(sizeof(kColors) / sizeof(kColors[0]));
 
+// ---------------------------------------------------------------------------
+// Confirm / Back / Restart
+// The SDK only has Up/Down/Left/Right actions and leaves the encoder buttons
+// unassigned (each game decides). Here, on the arcade encoders (either player):
+//   Button 1 = confirm,  Button 2 = back to the title,  Button 3 = restart.
+// The old keyboard and gamepad keys still work for development.
+// ---------------------------------------------------------------------------
+static bool ConfirmPressed()
+{
+    return arcade::IsButtonPressed(arcade::Player::Any, 0) ||
+           IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_KP_ENTER) ||
+           IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN) ||
+           IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+}
+
+static bool BackPressed()
+{
+    return arcade::IsButtonPressed(arcade::Player::Any, 1) ||
+           IsKeyPressed(KEY_LEFT_CONTROL) || IsKeyPressed(KEY_RIGHT_CONTROL) ||
+           IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT) ||
+           IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+}
+
+static bool RestartPressed()
+{
+    return arcade::IsButtonPressed(arcade::Player::Any, 2) ||
+           IsKeyPressed(KEY_R) ||
+           IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT) ||
+           IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+}
+
 static const Color kApple = {255, 44, 44, 255};
 static const Color kGrid  = {56, 56, 56, 255};
 static const Color kBlue  = {49, 167, 255, 255};
@@ -179,13 +210,13 @@ static void OnePlayerEvent()
     if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Left) && g.dx1 == 0) { g.dx1 = -CELL; g.dy1 = 0; }
     if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Right) && g.dx1 == 0) { g.dx1 = CELL; g.dy1 = 0; }
 
-    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Restart))
+    if (RestartPressed())
     {
         StopMusicIfPlaying();
         InitOnePlayer();
         PlayMusicLoop();
     }
-    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Back))
+    if (BackPressed())
     {
         StopMusicIfPlaying();
         g.scene = SceneId::Title;
@@ -324,13 +355,13 @@ static void TwoPlayerEvent()
     if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Left) && g.dxB == 0) { g.dxB = -CELL; g.dyB = 0; }
     if (arcade::IsActionPressed(arcade::Player::Two, arcade::Action::Right) && g.dxB == 0) { g.dxB = CELL; g.dyB = 0; }
 
-    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Restart))
+    if (RestartPressed())
     {
         StopMusicIfPlaying();
         InitTwoPlayer();
         PlayMusicLoop();
     }
-    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Back))
+    if (BackPressed())
     {
         StopMusicIfPlaying();
         g.scene = SceneId::Title;
@@ -403,7 +434,7 @@ static void TitleEvent()
     if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Up))
         g.titleSelection = (g.titleSelection == 1) ? 3 : g.titleSelection - 1;
 
-    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Confirm))
+    if (ConfirmPressed())
     {
         if (g.titleSelection == 1) { InitOnePlayer(); g.scene = SceneId::OnePlayer; PlayMusicLoop(); }
         else if (g.titleSelection == 2) { InitTwoPlayer(); g.scene = SceneId::TwoPlayer; PlayMusicLoop(); }
@@ -489,7 +520,7 @@ static void ConfigEvent()
         RebuildConfigColors();
     }
 
-    if (arcade::IsActionPressed(arcade::Player::Any, arcade::Action::Back))
+    if (BackPressed())
     {
         g.scene = SceneId::Title;
         g.p1HiliLeft = g.p1HiliRight = g.p2HiliLeft = g.p2HiliRight = false;
@@ -575,6 +606,7 @@ int main(void)
 
     while (!WindowShouldClose())
     {
+        arcade::UpdateInput();   // once per frame, before any input query
         float dt = GetFrameTime();
 
         if (g.musicLoaded && g.musicPlaying)
