@@ -301,7 +301,9 @@ static bool OnTailList(const std::vector<Segment>& tail, int x, int y)
 
 static void TwoPlayerDidEat()
 {
-    if (g.headA.x != g.apple2.x || g.headA.y != g.apple2.y) return;
+    const bool aEat = g.headA.x == g.apple2.x && g.headA.y == g.apple2.y;
+    const bool bEat = g.headB.x == g.apple2.x && g.headB.y == g.apple2.y;
+    if (!aEat && !bEat) return;
     const int numCells2 = LOGICAL_W / CELL;
     int prevX = g.apple2.x, prevY = g.apple2.y;
     int currX, currY;
@@ -315,8 +317,8 @@ static void TwoPlayerDidEat()
         break;
     }
     g.apple2.x = currX; g.apple2.y = currY;
-    g.tailA.push_back(g.tailA.back());
-    g.tailB.push_back(g.tailB.back());
+    if (aEat) g.tailA.push_back(g.tailA.back());
+    if (bEat) g.tailB.push_back(g.tailB.back());
 }
 
 static void TwoPlayerIsCollide()
