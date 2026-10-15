@@ -110,6 +110,9 @@ struct GameState
     std::vector<Segment> tail1;
     bool gameOver1 = false;
     double moveAccum1 = 0.0;
+    int score1 = 0;               // apples eaten this run
+    int highScore1 = 0;           // best one-player score (persisted to disk)
+    bool newHighScore1 = false;   // this run beat the previous best
 
     int dxA = CELL, dyA = 0;
     int dxB = -CELL, dyB = 0;
@@ -143,6 +146,34 @@ static void StopMusicIfPlaying()
     }
 }
 
+// ---------------------------------------------------------------------------
+// One-player high score persistence
+// Stored as plain text in the resource directory (which is the working
+// directory after SearchAndSetResourceDir). Any I/O failure is ignored so the
+// game still runs from a read-only location; the score just won't persist.
+// ---------------------------------------------------------------------------
+static const char* kHighScoreFile = "highscore.txt";
+
+static void LoadHighScore()
+{
+    g.highScore1 = 0;
+    if (!FileExists(kHighScoreFile)) return;
+
+    char* text = LoadFileText(kHighScoreFile);
+    if (text == nullptr) return;
+    int value = atoi(text);
+    UnloadFileText(text);
+
+    g.highScore1 = (value > 0) ? value : 0;
+}
+
+static void SaveHighScore()
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%d\n", g.highScore1);
+    SaveFileText(kHighScoreFile, buf);
+}
+
 static void OnePlayerSpawnApple(); // forward declaration
 
 static void InitOnePlayer()
@@ -155,6 +186,8 @@ static void InitOnePlayer()
         g.tail1.push_back({ g.head1.x - 10 * i * SCALE, g.head1.y });
     g.gameOver1 = false;
     g.moveAccum1 = 0.0;
+    g.score1 = 0;
+    g.newHighScore1 = false;
     OnePlayerSpawnApple();
 }
 
@@ -182,24 +215,36 @@ static void OnePlayerDidEat()
     if (g.head1.x == g.apple.x && g.head1.y == g.apple.y)
     {
         if (!g.tail1.empty()) g.tail1.push_back(g.tail1.back());
+        ++g.score1;
         OnePlayerSpawnApple();
+    }
+}
+
+// Ends the current run. Safe to call more than once per step (e.g. when the
+// head hits a wall and the tail in the same move): only the first call counts.
+static void OnePlayerGameOver()
+{
+    if (g.gameOver1) return;
+
+    g.dx1 = 0; g.dy1 = 0; g.gameOver1 = true;
+    StopMusicIfPlaying();
+
+    if (g.score1 > g.highScore1)
+    {
+        g.highScore1 = g.score1;
+        g.newHighScore1 = true;
+        SaveHighScore();
     }
 }
 
 static void OnePlayerIsCollide()
 {
     if (g.head1.x < 0 || g.head1.x > LOGICAL_W || g.head1.y < 0 || g.head1.y > LOGICAL_H)
-    {
-        g.dx1 = 0; g.dy1 = 0; g.gameOver1 = true;
-        StopMusicIfPlaying();
-    }
+        OnePlayerGameOver();
     for (auto& s : g.tail1)
     {
         if (g.head1.x == s.x && g.head1.y == s.y)
-        {
-            g.dx1 = 0; g.dy1 = 0; g.gameOver1 = true;
-            StopMusicIfPlaying();
-        }
+            OnePlayerGameOver();
     }
 }
 
@@ -263,8 +308,26 @@ static void OnePlayerDraw()
     {
         const char* txt = "Game Over...";
         Vector2 sz = MeasureTextEx(gFont, txt, 45 * SCALE, 1);
-        DrawTextEx(gFont, txt, { (LOGICAL_W - sz.x) / 2, (LOGICAL_H - sz.y) / 2 }, 45 * SCALE, 1, WHITE);
+        float top = (LOGICAL_H - sz.y) / 2;
+        DrawTextEx(gFont, txt, { (LOGICAL_W - sz.x) / 2, top }, 45 * SCALE, 1, WHITE);
+
+        const char* scoreTxt = TextFormat("Score: %d", g.score1);
+        Vector2 ssz = MeasureTextEx(gFont, scoreTxt, 24 * SCALE, 1);
+        DrawTextEx(gFont, scoreTxt, { (LOGICAL_W - ssz.x) / 2, top + sz.y + 4 * SCALE }, 24 * SCALE, 1, WHITE);
+
+        if (g.newHighScore1)
+        {
+            const char* hs = "New High Score!";
+            Vector2 hsz = MeasureTextEx(gFont, hs, 24 * SCALE, 1);
+            DrawTextEx(gFont, hs, { (LOGICAL_W - hsz.x) / 2, top + sz.y + ssz.y + 8 * SCALE }, 24 * SCALE, 1, kBlue);
+        }
     }
+
+    // Score HUD (top-right, translucent so it doesn't hide the playfield)
+    const int bestShown = (g.score1 > g.highScore1) ? g.score1 : g.highScore1;
+    const char* hud = TextFormat("Score: %d    Best: %d", g.score1, bestShown);
+    Vector2 hudSz = MeasureTextEx(gFont, hud, 12 * SCALE, 1);
+    DrawTextEx(gFont, hud, { LOGICAL_W - hudSz.x - 10, 6 }, 12 * SCALE, 1, Fade(WHITE, 0.7f));
 
     DrawText("[ESC] Menu   [R] Restart   [CTRL] Title", 10, LOGICAL_H - 24, 18, GRAY);
 }
@@ -476,6 +539,10 @@ static void TitleDraw()
                    22 * SCALE, 1, sel ? kBlue : kRed);
     }
 
+    const char* best = TextFormat("One Player High Score: %d", g.highScore1);
+    Vector2 bsz = MeasureTextEx(gFont, best, 20 * SCALE, 1);
+    DrawTextEx(gFont, best, { cx - bsz.x / 2, LOGICAL_H - 100.0f }, 20 * SCALE, 1, WHITE);
+
     const char* hint = "UP/DOWN or W/S select   ENTER start   ESC quit";
     Vector2 hsz = MeasureTextEx(gFont, hint, 14 * SCALE, 1);
     DrawTextEx(gFont, hint, { cx - hsz.x / 2, LOGICAL_H - 40.0f }, 14 * SCALE, 1, GRAY);
@@ -583,6 +650,7 @@ int main(void)
     SetTargetFPS(60);
 
     SearchAndSetResourceDir("resources");
+    LoadHighScore();
 
     InitAudioDevice();
 
